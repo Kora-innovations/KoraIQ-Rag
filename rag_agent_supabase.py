@@ -124,7 +124,7 @@ def create_openai_functions_agent(llm, tools, prompt):
 # from langchain_tavily import TavilySearch
 from langchain_core.messages import HumanMessage, AIMessage, BaseMessage, SystemMessage
 from langsmith import traceable
-from langchain.chains import RetrievalQA
+from langchain_classic.chains import RetrievalQA
 # from knowledgebase import ingest_to_mongo
 from langchain_core.tools import tool
 from pydantic import BaseModel
