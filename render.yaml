@@ -1,0 +1,36 @@
+services:
+  - type: web
+    name: kora-rag-service
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python start.py
+    envVars:
+      # PORT is automatically set by Render for web services
+      - key: PYTHON_VERSION
+        value: 3.9.0
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_KEY
+        sync: false
+      - key: POSTGRES_URL
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: TAVILY_API_KEY
+        sync: false
+      - key: LANGSMITH_API_KEY
+        sync: false
+      - key: LANGSMITH_PROJECT
+        value: health-insurance-qa
+      - key: MAX_HISTORY_TOKENS
+        value: 1500
+      - key: TOKEN_MODEL_FOR_COUNT
+        value: gpt-4o
+      - key: SUPABASE_TABLE
+        value: hmo_documents
+      - key: SUPABASE_QUERY_NAME
+        value: match_documents
+      - key: OPENAI_MODEL
+        value: gpt-5
+      - key: SYSTEM_PROMPT
+        value: "You are a helpful, knowledgeable AI assistant. You provide accurate and well-researched answers to general questions. You are good at conversation, remember context, and can discuss a wide range of topics including technology, business, current events, and general knowledge. If a question is unclear, ask for clarification. Always be helpful, accurate, and engaging in your responses."

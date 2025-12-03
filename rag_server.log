@@ -1,0 +1,447 @@
+/Users/ernest/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+INFO:     Started server process [78231]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)
+INFO:     127.0.0.1:56990 - "GET /docs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56992 - "GET /docs HTTP/1.1" 200 OK
+
+
+[1m> Entering new AgentExecutor chain...[0m
+[32;1m[1;3mOf course! Please go ahead and ask your business question, and I'll do my best to assist you.[0m
+
+[1m> Finished chain.[0m
+INFO:     127.0.0.1:56992 - "POST /chat HTTP/1.1" 200 OK
+
+
+[1m> Entering new AgentExecutor chain...[0m
+[32;1m[1;3m
+Invoking: `search_web` with `fintech market trends 2023 Nigeria`
+responded: To provide you with the most accurate and up-to-date information on market trends in fintech, I'll need to perform a quick search. Please hold on for a moment.
+
+[0m[33;1m[1;3m{'query': "Nigerian context. When users say 'the Island', interpret as Lekki, VI, Ikoyi, Ajah, Oniru, etc. fintech market trends 2023 Nigeria", 'follow_up_questions': None, 'answer': None, 'images': [], 'results': [{'url': 'https://global-angle.com/case-study/analysis-of-fintech-services-in-nigeria/', 'title': 'Analysis of Fintech Services in Nigeria - Global Angle', 'content': 'Missing: Lekki VI Ikoyi Ajah Oniru', 'score': 0.6072213, 'raw_content': None}, {'url': 'https://www.proshare.co/articles/key-takeaways-from-the-2023-nigerian-fintech-week?menu=Technology&classification=Read&category=Fintech', 'title': 'Key Takeaways from the 2023 Nigerian Fintech Week - Proshare', 'content': 'Nigeria Remains the Leading Fintech Investment Destination in Africa · Collaboration Between Regulators and Fintech Operators Can Deepen Financial Inclusion.', 'score': 0.60666215, 'raw_content': None}, {'url': 'https://fintech.global/2024/02/29/nigeria-retains-top-spot-in-africa-for-early-stage-fintech-investment-in-2023/', 'title': 'Nigeria retains top spot in Africa for early stage FinTech investment ...', 'content': 'Nigeria was the most active African FinTech seed country with 49 deals, a 42% share of total deals. Kenya was the second most active with 15 deals.', 'score': 0.37113717, 'raw_content': None}, {'url': 'https://www.efina.org.ng/wp-content/uploads/2020/08/Fintech-Landscape-and-Impact-Assessment-Report.pdf', 'title': '[PDF] FinTech Landscape and Impact Assessment Study - EFInA', 'content': 'The Nigerian FinTech landscape is attractive and growing, with a concentration in Lagos, focused on banked customers and providing payment and lending', 'score': 0.36731625, 'raw_content': None}, {'url': 'https://www.pwc.com/ng/en/assets/pdf/fintech-banking-sector-nigeria.pdf', 'title': '[PDF] fintech-banking-sector-nigeria.pdf - PwC', 'content': 'Many fintechs in Nigeria are predominantly concerned with payment systems disruptions especially in the retail segment of the financial services value chain.', 'score': 0.349933, 'raw_content': None}], 'response_time': 1.87, 'request_id': 'b2ae0c7b-b3bc-43b2-a230-f846d148694e'}[0m[32;1m[1;3mHere are some key market trends in the Nigerian fintech sector for 2023:
+
+1. **Investment Growth**: Nigeria remains a leading fintech investment destination in Africa. The country has been the most active in terms of early-stage fintech investments, with a significant number of deals compared to other African countries.
+
+2. **Regulatory Collaboration**: There is an increasing collaboration between regulators and fintech operators. This partnership aims to deepen financial inclusion and create a more conducive environment for fintech growth.
+
+3. **Focus on Payments and Lending**: Many Nigerian fintech companies are concentrating on disrupting payment systems, particularly in the retail segment. This focus is part of a broader trend to enhance financial services and accessibility for banked customers.
+
+4. **Financial Inclusion**: Efforts are being made to expand financial services to underserved populations, leveraging technology to reach more people and provide them with essential financial tools.
+
+These trends highlight the dynamic nature of the fintech landscape in Nigeria, driven by investment, regulatory support, and a focus on innovation in payment and lending solutions. If you need more detailed information or specific aspects of these trends, feel free to ask![0m
+
+[1m> Finished chain.[0m
+
+
+[1m> Entering new AgentExecutor chain...[0m
+[32;1m[1;3mOf course! How can I assist you today?[0m
+
+[1m> Finished chain.[0m
+INFO:     127.0.0.1:57040 - "POST /chat HTTP/1.1" 200 OK
+
+
+[1m> Entering new AgentExecutor chain...[0m
+[32;1m[1;3m
+Invoking: `search_internal_docs` with `dental care hospitals on the Island`
+
+
+[0mINFO:     127.0.0.1:59591 - "POST /chat HTTP/1.1" 500 Internal Server Error
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/uvicorn/protocols/http/h11_impl.py", line 403, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/uvicorn/middleware/proxy_headers.py", line 60, in __call__
+    return await self.app(scope, receive, send)
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/fastapi/applications.py", line 1054, in __call__
+    await super().__call__(scope, receive, send)
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/starlette/applications.py", line 113, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/starlette/middleware/errors.py", line 186, in __call__
+    raise exc
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/starlette/routing.py", line 716, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/starlette/routing.py", line 736, in app
+    await route.handle(scope, receive, send)
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/starlette/routing.py", line 290, in handle
+    await self.app(scope, receive, send)
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/starlette/routing.py", line 78, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/starlette/routing.py", line 75, in app
+    response = await f(request)
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/fastapi/routing.py", line 302, in app
+    raw_response = await run_endpoint_function(
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/fastapi/routing.py", line 215, in run_endpoint_function
+    return await run_in_threadpool(dependant.call, **values)
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/starlette/concurrency.py", line 38, in run_in_threadpool
+    return await anyio.to_thread.run_sync(func)
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/anyio/to_thread.py", line 56, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/anyio/_backends/_asyncio.py", line 2476, in run_sync_in_worker_thread
+    return await future
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/anyio/_backends/_asyncio.py", line 967, in run
+    result = context.run(func, *args)
+  File "/Users/ernest/Desktop/koraiq/ragproject/rag_agent_deux_cli.py", line 311, in chat_endpoint
+    result = agent_executor.invoke({
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/langchain/chains/base.py", line 165, in invoke
+    self._call(inputs, run_manager=run_manager)
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/langchain/agents/agent.py", line 1625, in _call
+    next_step_output = self._take_next_step(
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/langchain/agents/agent.py", line 1325, in _take_next_step
+    list(
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/langchain/agents/agent.py", line 1408, in _iter_next_step
+    yield self._perform_agent_action(
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/langchain/agents/agent.py", line 1433, in _perform_agent_action
+    observation = tool.run(
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/langchain_core/tools/base.py", line 888, in run
+    raise error_to_raise
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/langchain_core/tools/base.py", line 857, in run
+    response = context.run(self._run, *tool_args, **tool_kwargs)
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/langchain_core/tools/simple.py", line 105, in _run
+    return self.func(*args, **kwargs)
+  File "/Users/ernest/Desktop/koraiq/ragproject/rag_agent_deux_cli.py", line 174, in rag_tool_func
+    result = qa_chain.invoke({"query": query, "chat_history": history.messages})
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/langchain/chains/base.py", line 165, in invoke
+    self._call(inputs, run_manager=run_manager)
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/langchain/chains/retrieval_qa/base.py", line 159, in _call
+    answer = self.combine_documents_chain.run(
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/langchain_core/_api/deprecation.py", line 190, in warning_emitting_wrapper
+    return wrapped(*args, **kwargs)
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/langchain/chains/base.py", line 632, in run
+    return self(kwargs, callbacks=callbacks, tags=tags, metadata=metadata)[
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/langchain_core/_api/deprecation.py", line 190, in warning_emitting_wrapper
+    return wrapped(*args, **kwargs)
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/langchain/chains/base.py", line 410, in __call__
+    return self.invoke(
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/langchain/chains/base.py", line 165, in invoke
+    self._call(inputs, run_manager=run_manager)
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/langchain/chains/combine_documents/base.py", line 143, in _call
+    output, extra_return_dict = self.combine_docs(
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/langchain/chains/combine_documents/stuff.py", line 263, in combine_docs
+    return self.llm_chain.predict(callbacks=callbacks, **inputs), {}
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/langchain/chains/llm.py", line 325, in predict
+    return self(kwargs, callbacks=callbacks)[self.output_key]
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/langchain_core/_api/deprecation.py", line 190, in warning_emitting_wrapper
+    return wrapped(*args, **kwargs)
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/langchain/chains/base.py", line 410, in __call__
+    return self.invoke(
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/langchain/chains/base.py", line 165, in invoke
+    self._call(inputs, run_manager=run_manager)
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/langchain/chains/llm.py", line 127, in _call
+    response = self.generate([inputs], run_manager=run_manager)
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/langchain/chains/llm.py", line 139, in generate
+    return self.llm.generate_prompt(
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/langchain_core/language_models/chat_models.py", line 1006, in generate_prompt
+    return self.generate(prompt_messages, stop=stop, callbacks=callbacks, **kwargs)
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/langchain_core/language_models/chat_models.py", line 825, in generate
+    self._generate_with_cache(
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/langchain_core/language_models/chat_models.py", line 1072, in _generate_with_cache
+    result = self._generate(
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/langchain_openai/chat_models/base.py", line 1177, in _generate
+    response = self.client.create(**payload)
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/openai/_utils/_utils.py", line 287, in wrapper
+    return func(*args, **kwargs)
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/openai/resources/chat/completions/completions.py", line 1150, in create
+    return self._post(
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/openai/_base_client.py", line 1259, in post
+    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/openai/_base_client.py", line 1047, in request
+    raise self._make_status_error_from_response(err.response) from None
+openai.RateLimitError: Error code: 429 - {'error': {'message': 'Request too large for gpt-4o in organization org-hvKcqNjOcCAgrbRBwr53SE5M on tokens per min (TPM): Limit 30000, Requested 87326. The input or output tokens must be reduced in order to run successfully. Visit https://platform.openai.com/account/rate-limits to learn more.', 'type': 'tokens', 'param': None, 'code': 'rate_limit_exceeded'}}
+
+
+[1m> Entering new AgentExecutor chain...[0m
+[32;1m[1;3mAbsolutely! What would you like to know?[0m
+
+[1m> Finished chain.[0m
+INFO:     127.0.0.1:59765 - "POST /chat HTTP/1.1" 200 OK
+
+
+[1m> Entering new AgentExecutor chain...[0m
+[32;1m[1;3m
+Invoking: `search_internal_docs` with `health insurance coverage details`
+
+
+[0m[36;1m[1;3mTo access the details of your health insurance coverage, you should refer to the specific plan associated with your HMO ID. This information typically includes the tiers of coverage, benefits, and any limits on services such as dental, optical, and maternity care. You can find this information in the internal documents provided by your company or directly through your HMO's portal.
+
+If you need further assistance or specific details about your plan, please check your email for any communication from your health insurance provider or reach out to your HR department for guidance. They can provide you with the necessary documents or direct you to the appropriate resources.[0m[32;1m[1;3mTo find out what's covered in your health insurance plan, you'll need to refer to the specific plan details associated with your HMO ID. This information usually includes coverage tiers, benefits, and any limits on services like dental, optical, and maternity care.
+
+You can access this information through internal documents provided by your company or directly via your HMO's portal. If you need further assistance or specific details, please check your email for any communication from your health insurance provider or contact your HR department. They can provide you with the necessary documents or direct you to the appropriate resources.[0m
+
+[1m> Finished chain.[0m
+INFO:     127.0.0.1:59984 - "POST /chat HTTP/1.1" 200 OK
+
+
+[1m> Entering new AgentExecutor chain...[0m
+[32;1m[1;3m
+Invoking: `search_internal_docs` with `dental coverage in health insurance plan`
+
+
+[0m[36;1m[1;3mTo understand the dental coverage in your health insurance plan, you will need to refer to the specific details of your plan tier. Generally, health insurance plans may offer varying levels of dental coverage, which can include routine check-ups, cleanings, fillings, and sometimes more extensive procedures like root canals or orthodontics.
+
+To find the exact details of your dental coverage, please check the health plan tiers and benefit details document provided by your HMO. If you have access to your plan documentation, it should outline the specific dental benefits, coverage limits, and any exclusions.
+
+If you need further assistance or cannot locate your plan details, please contact your People Partner or the HR department for guidance. They can help you access the necessary documents or provide additional information about your dental coverage.[0m[32;1m[1;3mTo understand the dental coverage in your health insurance plan, you will need to refer to the specific details of your plan tier. Generally, health insurance plans may offer varying levels of dental coverage, which can include routine check-ups, cleanings, fillings, and sometimes more extensive procedures like root canals or orthodontics.
+
+To find the exact details of your dental coverage, please check the health plan tiers and benefit details document provided by your HMO. If you have access to your plan documentation, it should outline the specific dental benefits, coverage limits, and any exclusions.
+
+If you need further assistance or cannot locate your plan details, please contact your People Partner or the HR department for guidance. They can help you access the necessary documents or provide additional information about your dental coverage.[0m
+
+[1m> Finished chain.[0m
+INFO:     127.0.0.1:60046 - "POST /chat HTTP/1.1" 200 OK
+
+
+[1m> Entering new AgentExecutor chain...[0m
+[32;1m[1;3mTo provide you with a list of hospitals in your network, I need to know your location or the area you are interested in, such as 'The Island' or 'The Mainland'. This will help me give you the most relevant information. Could you please specify your location or the area you are interested in?[0m
+
+[1m> Finished chain.[0m
+INFO:     127.0.0.1:60086 - "POST /chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60965 - "GET /docs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60965 - "GET /docs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60965 - "GET /docs HTTP/1.1" 200 OK
+
+
+[1m> Entering new AgentExecutor chain...[0m
+[32;1m[1;3mOf course! Please go ahead and ask your business question, and I'll do my best to assist you.[0m
+
+[1m> Finished chain.[0m
+INFO:     127.0.0.1:60965 - "POST /chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60965 - "GET /docs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60965 - "GET /docs HTTP/1.1" 200 OK
+
+
+[1m> Entering new AgentExecutor chain...[0m
+[32;1m[1;3m
+Invoking: `search_internal_docs` with `health insurance plan coverage for Innovation department`
+
+
+[0m[36;1m[1;3mTo provide you with accurate information about the health insurance plan coverage for the Innovation department, I would need to refer to the specific health plan details associated with your department. Generally, health insurance plans cover a range of services, including medical consultations, hospitalizations, dental care, optical services, and maternity care, among others. 
+
+For detailed information on the specific coverage limits and benefits available to the Innovation department, please refer to the internal health plan documents or contact your HR representative. If you have access to your HMO ID, you can also check the list of providers and specific plan details [here](https://drive.google.com/drive/folders/1mI6BxxenKSO8K9uBGq41brqnEtzBsPwK?usp=share_link). If you need further assistance, feel free to reach out to your People Partner.[0m[32;1m[1;3mTo find out the specific coverage details of your health insurance plan as part of the Innovation department, you can refer to the internal health plan documents or contact your HR representative. Generally, health insurance plans cover services like medical consultations, hospitalizations, dental care, optical services, and maternity care.
+
+If you have access to your HMO ID, you can also check the list of providers and specific plan details [here](https://drive.google.com/drive/folders/1mI6BxxenKSO8K9uBGq41brqnEtzBsPwK?usp=share_link). For further assistance, you can reach out to your People Partner.[0m
+
+[1m> Finished chain.[0m
+INFO:     127.0.0.1:60965 - "POST /chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60965 - "GET /docs HTTP/1.1" 200 OK
+
+
+[1m> Entering new AgentExecutor chain...[0m
+[32;1m[1;3m
+Invoking: `search_internal_docs` with `dental coverage`
+
+
+[0mINFO:     127.0.0.1:60965 - "POST /chat HTTP/1.1" 500 Internal Server Error
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/uvicorn/protocols/http/h11_impl.py", line 403, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/uvicorn/middleware/proxy_headers.py", line 60, in __call__
+    return await self.app(scope, receive, send)
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/fastapi/applications.py", line 1054, in __call__
+    await super().__call__(scope, receive, send)
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/starlette/applications.py", line 113, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/starlette/middleware/errors.py", line 186, in __call__
+    raise exc
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/starlette/routing.py", line 716, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/starlette/routing.py", line 736, in app
+    await route.handle(scope, receive, send)
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/starlette/routing.py", line 290, in handle
+    await self.app(scope, receive, send)
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/starlette/routing.py", line 78, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/starlette/routing.py", line 75, in app
+    response = await f(request)
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/fastapi/routing.py", line 302, in app
+    raw_response = await run_endpoint_function(
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/fastapi/routing.py", line 215, in run_endpoint_function
+    return await run_in_threadpool(dependant.call, **values)
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/starlette/concurrency.py", line 38, in run_in_threadpool
+    return await anyio.to_thread.run_sync(func)
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/anyio/to_thread.py", line 56, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/anyio/_backends/_asyncio.py", line 2476, in run_sync_in_worker_thread
+    return await future
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/anyio/_backends/_asyncio.py", line 967, in run
+    result = context.run(func, *args)
+  File "/Users/ernest/Desktop/koraiq/ragproject/rag_agent_deux_cli.py", line 311, in chat_endpoint
+    result = agent_executor.invoke({
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/langchain/chains/base.py", line 165, in invoke
+    self._call(inputs, run_manager=run_manager)
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/langchain/agents/agent.py", line 1625, in _call
+    next_step_output = self._take_next_step(
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/langchain/agents/agent.py", line 1325, in _take_next_step
+    list(
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/langchain/agents/agent.py", line 1408, in _iter_next_step
+    yield self._perform_agent_action(
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/langchain/agents/agent.py", line 1433, in _perform_agent_action
+    observation = tool.run(
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/langchain_core/tools/base.py", line 888, in run
+    raise error_to_raise
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/langchain_core/tools/base.py", line 857, in run
+    response = context.run(self._run, *tool_args, **tool_kwargs)
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/langchain_core/tools/simple.py", line 105, in _run
+    return self.func(*args, **kwargs)
+  File "/Users/ernest/Desktop/koraiq/ragproject/rag_agent_deux_cli.py", line 174, in rag_tool_func
+    result = qa_chain.invoke({"query": query, "chat_history": history.messages})
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/langchain/chains/base.py", line 165, in invoke
+    self._call(inputs, run_manager=run_manager)
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/langchain/chains/retrieval_qa/base.py", line 159, in _call
+    answer = self.combine_documents_chain.run(
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/langchain_core/_api/deprecation.py", line 190, in warning_emitting_wrapper
+    return wrapped(*args, **kwargs)
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/langchain/chains/base.py", line 632, in run
+    return self(kwargs, callbacks=callbacks, tags=tags, metadata=metadata)[
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/langchain_core/_api/deprecation.py", line 190, in warning_emitting_wrapper
+    return wrapped(*args, **kwargs)
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/langchain/chains/base.py", line 410, in __call__
+    return self.invoke(
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/langchain/chains/base.py", line 165, in invoke
+    self._call(inputs, run_manager=run_manager)
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/langchain/chains/combine_documents/base.py", line 143, in _call
+    output, extra_return_dict = self.combine_docs(
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/langchain/chains/combine_documents/stuff.py", line 263, in combine_docs
+    return self.llm_chain.predict(callbacks=callbacks, **inputs), {}
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/langchain/chains/llm.py", line 325, in predict
+    return self(kwargs, callbacks=callbacks)[self.output_key]
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/langchain_core/_api/deprecation.py", line 190, in warning_emitting_wrapper
+    return wrapped(*args, **kwargs)
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/langchain/chains/base.py", line 410, in __call__
+    return self.invoke(
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/langchain/chains/base.py", line 165, in invoke
+    self._call(inputs, run_manager=run_manager)
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/langchain/chains/llm.py", line 127, in _call
+    response = self.generate([inputs], run_manager=run_manager)
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/langchain/chains/llm.py", line 139, in generate
+    return self.llm.generate_prompt(
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/langchain_core/language_models/chat_models.py", line 1006, in generate_prompt
+    return self.generate(prompt_messages, stop=stop, callbacks=callbacks, **kwargs)
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/langchain_core/language_models/chat_models.py", line 825, in generate
+    self._generate_with_cache(
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/langchain_core/language_models/chat_models.py", line 1072, in _generate_with_cache
+    result = self._generate(
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/langchain_openai/chat_models/base.py", line 1177, in _generate
+    response = self.client.create(**payload)
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/openai/_utils/_utils.py", line 287, in wrapper
+    return func(*args, **kwargs)
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/openai/resources/chat/completions/completions.py", line 1150, in create
+    return self._post(
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/openai/_base_client.py", line 1259, in post
+    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))
+  File "/Users/ernest/Library/Python/3.9/lib/python/site-packages/openai/_base_client.py", line 1047, in request
+    raise self._make_status_error_from_response(err.response) from None
+openai.RateLimitError: Error code: 429 - {'error': {'message': 'Request too large for gpt-4o in organization org-hvKcqNjOcCAgrbRBwr53SE5M on tokens per min (TPM): Limit 30000, Requested 83556. The input or output tokens must be reduced in order to run successfully. Visit https://platform.openai.com/account/rate-limits to learn more.', 'type': 'tokens', 'param': None, 'code': 'rate_limit_exceeded'}}
+INFO:     127.0.0.1:61077 - "GET /docs HTTP/1.1" 200 OK
+
+
+[1m> Entering new AgentExecutor chain...[0m
+[32;1m[1;3m
+Invoking: `search_internal_docs` with `Innovation department health insurance network hospitals`
+
+
+[0m[36;1m[1;3mTo find the list of network hospitals available for the Innovation department's health insurance plan, please refer to the specific plan details associated with your HMO ID. You can access the list of hospitals and clinics by checking the following link: [Network Hospitals](https://drive.google.com/drive/folders/1mI6BxxenKSO8K9uBGq41brqnEtzBsPwK?usp=share_link). This document will provide you with the necessary information on the hospitals you can access under your plan. If you have any further questions or need assistance, feel free to reach out to your HR representative or People Partner.[0m[32;1m[1;3mTo find the list of network hospitals available for the Innovation department's health insurance plan, please refer to the specific plan details associated with your HMO ID. You can access the list of hospitals and clinics by checking the following link: [Network Hospitals](https://drive.google.com/drive/folders/1mI6BxxenKSO8K9uBGq41brqnEtzBsPwK?usp=share_link). This document will provide you with the necessary information on the hospitals you can access under your plan. If you have any further questions or need assistance, feel free to reach out to your HR representative or People Partner.[0m
+
+[1m> Finished chain.[0m
+INFO:     127.0.0.1:61077 - "POST /chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61077 - "GET /docs HTTP/1.1" 200 OK
+
+
+[1m> Entering new AgentExecutor chain...[0m
+[32;1m[1;3mTo find a doctor on the Island (Lagos Island axis, including areas like Lekki, VI, Ikoyi, Ajah, Oniru), you can follow these steps:
+
+1. **Check Your Health Insurance Provider List**: Start by reviewing the list of hospitals and clinics covered by your health insurance. This will ensure that you can access services without incurring out-of-pocket expenses.
+
+2. **Use Online Directories**: Websites like Medpages or the Nigerian Medical Association's directory can help you find doctors by location and specialty.
+
+3. **Hospital Recommendations**: Some well-known hospitals on the Island include:
+   - **Lagos Island General Hospital**: Offers a wide range of services and is centrally located.
+   - **Reddington Hospital, Victoria Island**: Known for its comprehensive healthcare services.
+   - **St. Nicholas Hospital, Lagos Island**: Offers specialized medical services and has a good reputation.
+
+4. **Ask for Recommendations**: Colleagues or friends who live or work on the Island might have personal recommendations based on their experiences.
+
+5. **Online Reviews**: Check online reviews and ratings for hospitals and clinics to gauge the quality of care and patient satisfaction.
+
+If you need specific recommendations based on your health insurance plan or a particular medical specialty, please let me know![0m
+
+[1m> Finished chain.[0m
+INFO:     127.0.0.1:61077 - "POST /chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61077 - "GET /docs HTTP/1.1" 200 OK
+
+
+[1m> Entering new AgentExecutor chain...[0m
+[32;1m[1;3m
+Invoking: `search_internal_docs` with `HMO plan benefits for Innovation department admin`
+
+
+[0m[36;1m[1;3mTo provide you with accurate information about the HMO plan benefits for the Innovation department admin, I would need to refer to the specific health plan tier and benefits details associated with your role. Generally, HMO plans may include coverage for medical consultations, hospital admissions, dental care, optical services, and maternity benefits, among others. 
+
+For detailed information specific to your plan, please refer to the internal health plan documents or contact your People Partner. If you have your enrollee ID, you can also reach out to your HMO directly for personalized assistance. If you need further help, feel free to ask![0m[32;1m[1;3mTo provide you with accurate information about the benefits of your HMO plan as an admin in the Innovation department, I would need to refer to specific health plan details associated with your role. Generally, HMO plans may include coverage for:
+
+- Medical consultations
+- Hospital admissions
+- Dental care
+- Optical services
+- Maternity benefits
+
+For detailed information specific to your plan, please refer to the internal health plan documents or contact your People Partner. If you have your enrollee ID, you can also reach out to your HMO directly for personalized assistance. If you need further help, feel free to ask![0m
+
+[1m> Finished chain.[0m
+INFO:     127.0.0.1:61077 - "POST /chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65373 - "GET /docs HTTP/1.1" 200 OK
+
+
+[1m> Entering new AgentExecutor chain...[0m
+[32;1m[1;3m
+Invoking: `search_internal_docs` with `hospitals in network on Lagos Island`
+
+
+[0m[36;1m[1;3mTo find hospitals that are in-network on Lagos Island, you can refer to the list of in-network hospitals provided by your HMO. Typically, this list includes hospitals and clinics located in areas such as Lekki, Victoria Island (VI), Ikoyi, Ajah, and Oniru. 
+
+For specific names and contact details, please check the internal document or portal provided by your HMO or reach out to your HR department for assistance. If you need further help accessing this information, feel free to ask![0m[32;1m[1;3mTo find hospitals that are in-network on Lagos Island, you should refer to the list provided by your HMO. This list typically includes hospitals and clinics in areas such as Lekki, Victoria Island (VI), Ikoyi, Ajah, and Oniru.
+
+For specific names and contact details, please check the internal document or portal provided by your HMO, or reach out to your HR department for assistance. If you need further help accessing this information, feel free to ask![0m
+
+[1m> Finished chain.[0m
+INFO:     127.0.0.1:65508 - "POST /chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51755 - "GET /docs HTTP/1.1" 200 OK
+
+
+[1m> Entering new AgentExecutor chain...[0m
+[32;1m[1;3m
+Invoking: `search_internal_docs` with `hospitals in-network on Lagos Island`
+
+
+[0m[36;1m[1;3mTo find in-network hospitals on Lagos Island, you can refer to the list provided by your HMO. Typically, this list includes hospitals and clinics in areas such as Lekki, Victoria Island (VI), Ikoyi, Ajah, and Oniru. If you have access to your HMO portal or app, you can log in to view the most up-to-date list of in-network hospitals. Alternatively, you can contact your HMO's customer service for assistance. If you need further help, please let me know, and I can guide you on how to access this information through your company's resources.[0m[32;1m[1;3mTo find in-network hospitals on Lagos Island, you should refer to the list provided by your HMO. This list typically includes hospitals and clinics in areas such as Lekki, Victoria Island (VI), Ikoyi, Ajah, and Oniru.
+
+If you have access to your HMO portal or app, you can log in to view the most up-to-date list of in-network hospitals. Alternatively, you can contact your HMO's customer service for assistance. If you need further help accessing this information, please let me know, and I can guide you on how to access it through your company's resources.[0m
+
+[1m> Finished chain.[0m
+INFO:     127.0.0.1:51811 - "POST /chat HTTP/1.1" 200 OK

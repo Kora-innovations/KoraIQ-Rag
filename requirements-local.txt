@@ -1,0 +1,44 @@
+# Local requirements for Python 3.9 compatibility
+# This is a temporary file for local testing
+# Render uses requirements.txt with langchain 1.0.5 (requires Python 3.10+)
+
+fastapi==0.104.1
+uvicorn==0.24.0
+openai==1.109.1
+python-dotenv==1.0.0
+requests>=2.32.5
+pydantic>=2.0.0,<3.0.0
+
+# Supabase and PostgreSQL
+supabase>=2.3.0
+postgrest>=0.13.2
+psycopg[binary]>=3.0.0
+sqlalchemy==2.0.44
+
+# LangChain and AI - using Python 3.9 compatible versions
+# Note: langchain 1.0.5 requires Python 3.10+, so using 0.3.27 for local testing
+langchain==0.3.27
+langchain-openai==0.2.8
+langchain-community==0.3.28
+langchain-core>=0.3.72,<1.0.0
+langchain-text-splitters>=0.3.9,<1.0.0
+# langchain-classic not available for 0.3.x, using langchain.chains instead
+langgraph==0.6.11
+
+# Document processing
+unstructured==0.18.3
+python-multipart>=0.0.6
+
+# Token counting
+tiktoken>=0.5.0
+
+# LangSmith for tracing
+langsmith==0.4.37
+
+# Additional utilities
+regex>=2023.0.0
+PyYAML>=6.0.2
+
+# httpx version
+httpx>=0.25.2
+

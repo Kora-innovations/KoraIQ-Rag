@@ -1,0 +1,65 @@
+fastapi==0.104.1
+uvicorn==0.24.0
+# langchain-openai 1.0.0+ requires openai>=1.109.1
+# Pin to specific version to reduce resolution depth
+openai==1.109.1
+python-dotenv==1.0.0
+# langchain-community 0.3.28+ requires requests>=2.32.5
+requests>=2.32.5
+pydantic>=2.0.0,<3.0.0
+
+# Supabase and PostgreSQL
+# Updated to newer version to support httpx>=0.25.2 required by langgraph-sdk
+# Note: SupabaseVectorStore may need testing with newer supabase versions
+supabase>=2.3.0
+postgrest>=0.13.2
+psycopg[binary]>=3.0.0
+# Pin sqlalchemy to avoid resolution depth issues
+# Pin to specific version to reduce resolution depth
+sqlalchemy==2.0.44
+
+# LangChain and AI
+# Pin to specific version ranges to help dependency resolver
+# langchain-classic 1.0.0 requires langchain-core>=1.0.0 and langchain-text-splitters>=1.0.0
+# langchain 1.0.0+ requires langgraph>=1.0.0
+# Pin to specific version to reduce resolution depth
+langchain==1.0.5
+# langchain-openai 0.3.x requires langchain-core<1.0.0, but we need >=1.0.0
+# langchain-openai 1.0.0+ supports langchain-core>=1.0.0 (compatible with langchain 1.0.0+)
+# Pin to specific version to reduce resolution depth
+langchain-openai==1.0.2
+# langchain-community 0.3.x requires langchain-core<1.0.0, but we need >=1.0.0
+# Upgrade to 0.4.0+ or 1.0.0+ for langchain-core>=1.0.0 compatibility
+# Note: SupabaseVectorStore in 0.4.0 doesn't support supabase 2.3.0+, so we'll use a custom wrapper
+langchain-community>=0.4.0
+# Pin to specific version to reduce resolution depth (compatible with langchain==1.0.5)
+langchain-core==1.0.4
+# langchain-tavily 0.1.x requires langchain<0.4.0, incompatible with langchain 1.0.0+
+# Temporarily commented out - will use Tavily API directly if needed
+# langchain-tavily>=0.2.0,<1.0.0
+# Pin to specific versions to reduce resolution depth
+langchain-text-splitters==1.0.0
+langchain-classic==1.0.0
+# Pin to specific version to reduce resolution depth
+langgraph==1.0.2
+
+# Document processing
+unstructured>=0.10.0
+python-multipart>=0.0.6
+
+# Token counting
+tiktoken>=0.5.0
+
+# LangSmith for tracing
+# langchain-core 0.3.73+ requires langsmith>=0.3.45
+# Pin to specific version to reduce resolution depth
+langsmith==0.4.42
+
+# Additional utilities
+regex>=2023.0.0
+# Pin PyYAML to version with Python 3.13 wheels (6.0.2+)
+PyYAML>=6.0.2
+
+# httpx version - let pip resolve compatible version
+# langgraph-sdk requires >=0.25.2, supabase 2.3.0+ should support it
+httpx>=0.25.2
