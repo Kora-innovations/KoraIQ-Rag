@@ -20,7 +20,7 @@ from langchain_community.document_loaders import PyPDFLoader, UnstructuredExcelL
 from langchain_core.vectorstores import VectorStore
 from typing import List
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain.chains import ConversationalRetrievalChain
+from langchain_classic.chains import ConversationalRetrievalChain
 from langchain_core.prompts import ChatPromptTemplate, SystemMessagePromptTemplate, HumanMessagePromptTemplate, MessagesPlaceholder
 from langchain_community.chat_message_histories import ChatMessageHistory, SQLChatMessageHistory
 from langchain_core.documents import Document

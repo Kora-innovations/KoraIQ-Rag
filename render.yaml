@@ -7,7 +7,7 @@ services:
     envVars:
       # PORT is automatically set by Render for web services
       - key: PYTHON_VERSION
-        value: 3.9.0
+        value: 3.11.0
       - key: SUPABASE_URL
         sync: false
       - key: SUPABASE_SERVICE_KEY
