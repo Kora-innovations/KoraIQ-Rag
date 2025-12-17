@@ -9,8 +9,10 @@ from dotenv import load_dotenv
 # Load environment variables from .env file
 load_dotenv()
 
-from fastapi import FastAPI
-from pydantic import BaseModel
+from fastapi import FastAPI, Request, status
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
+from pydantic import BaseModel, ValidationError
 from regex import sub
 import uvicorn
 
@@ -881,6 +883,20 @@ def prune_chat_history_in_place(
 
 # --- FastAPI ---
 app = FastAPI()
+
+# Add validation error handler to log detailed errors
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    body = await request.body()
+    print(f" [Validation Error] Request path: {request.url.path}")
+    print(f" [Validation Error] Request method: {request.method}")
+    print(f" [Validation Error] Validation errors: {exc.errors()}")
+    print(f" [Validation Error] Request body: {body.decode('utf-8') if body else 'Empty'}")
+    return JSONResponse(
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        content={"detail": exc.errors(), "body": body.decode('utf-8') if body else 'Empty'}
+    )
+
 class ChatRequest(BaseModel):
     session_id: str
     message: str
