@@ -887,14 +887,23 @@ app = FastAPI()
 # Add validation error handler to log detailed errors
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
-    body = await request.body()
+    try:
+        body = await request.body()
+        body_str = body.decode('utf-8') if body else 'Empty'
+    except Exception as e:
+        # Handle case where client disconnected or body can't be read
+        body_str = f'Could not read body: {str(e)}'
+        print(f" [Validation Error] Could not read request body: {e}")
+    
     print(f" [Validation Error] Request path: {request.url.path}")
     print(f" [Validation Error] Request method: {request.method}")
     print(f" [Validation Error] Validation errors: {exc.errors()}")
-    print(f" [Validation Error] Request body: {body.decode('utf-8') if body else 'Empty'}")
+    print(f" [Validation Error] Request body: {body_str}")
+    print(f" [Validation Error] Request headers: {dict(request.headers)}")
+    
     return JSONResponse(
         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-        content={"detail": exc.errors(), "body": body.decode('utf-8') if body else 'Empty'}
+        content={"detail": exc.errors(), "body": body_str}
     )
 
 class ChatRequest(BaseModel):
