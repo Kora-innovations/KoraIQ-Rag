@@ -2,17 +2,15 @@ import os
 import argparse
 import contextvars
 import re
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any
 from datetime import datetime
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
 load_dotenv()
 
-from fastapi import FastAPI, Request, status
-from fastapi.exceptions import RequestValidationError
-from fastapi.responses import JSONResponse
-from pydantic import BaseModel, ValidationError
+from fastapi import FastAPI
+from pydantic import BaseModel
 from regex import sub
 import uvicorn
 
@@ -883,33 +881,10 @@ def prune_chat_history_in_place(
 
 # --- FastAPI ---
 app = FastAPI()
-
-# Add validation error handler to log detailed errors
-@app.exception_handler(RequestValidationError)
-async def validation_exception_handler(request: Request, exc: RequestValidationError):
-    try:
-        body = await request.body()
-        body_str = body.decode('utf-8') if body else 'Empty'
-    except Exception as e:
-        # Handle case where client disconnected or body can't be read
-        body_str = f'Could not read body: {str(e)}'
-        print(f" [Validation Error] Could not read request body: {e}")
-    
-    print(f" [Validation Error] Request path: {request.url.path}")
-    print(f" [Validation Error] Request method: {request.method}")
-    print(f" [Validation Error] Validation errors: {exc.errors()}")
-    print(f" [Validation Error] Request body: {body_str}")
-    print(f" [Validation Error] Request headers: {dict(request.headers)}")
-    
-    return JSONResponse(
-        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-        content={"detail": exc.errors(), "body": body_str}
-    )
-
 class ChatRequest(BaseModel):
     session_id: str
     message: str
-    user_id: Optional[str] = None  # Optional user ID from KoraID backend
+    user_id: str = None  # Optional user ID from KoraID backend
 
 @app.get("/health")
 def health_check():
