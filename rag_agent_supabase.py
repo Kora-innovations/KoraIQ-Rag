@@ -2,7 +2,7 @@ import os
 import argparse
 import contextvars
 import re
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from datetime import datetime
 from dotenv import load_dotenv
 
@@ -884,7 +884,7 @@ app = FastAPI()
 class ChatRequest(BaseModel):
     session_id: str
     message: str
-    user_id: str = None  # Optional user ID from KoraID backend
+    user_id: Optional[str] = None  # Optional user ID from KoraID backend
 
 @app.get("/health")
 def health_check():
