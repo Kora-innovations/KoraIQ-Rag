@@ -1,0 +1,56 @@
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Python virtual environment (DO NOT COMMIT - 777MB!)
+ragvenv/
+venv/
+env/
+ENV/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+
+# macOS
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Data files (large)
+*.parquet
+chroma_db/
+old kb/
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+.tmp_*
+rag_agent_supabase.py
+rag_agent_mongo.py
+rag_agent_deux.py
+rag_agent_deux_cli.py
+chroma_db
+gpt5_chat.py
+main.py
+knowledgebase.py
+get_luid_script.py
+google_ads_data.parquet
+old kb
+FIX_PSYCOPG_ERROR.md
+__pycache__     
+.ipynb_checkpoints
+.DS_Store
