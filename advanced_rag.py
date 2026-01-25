@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field # <-- TWEAK: Added Field
 from regex import sub
 import uvicorn
@@ -468,6 +469,15 @@ def prune_chat_history_in_place(
 # --- FastAPI ---
 app = FastAPI()
 
+# Add CORS middleware to allow requests from backend
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # In production, replace with specific backend URLs
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 @app.get("/health")
 def health_check():
     """Health check endpoint for production deployment"""
@@ -480,6 +490,7 @@ def health_check():
 class ChatRequest(BaseModel):
     session_id: str
     message: str
+    user_id: str = None  # Optional, for future use
 
 @app.post("/chat")
 def chat_endpoint(req: ChatRequest):
