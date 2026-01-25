@@ -15,11 +15,11 @@ import uvicorn
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langchain_pinecone import PineconeVectorStore
 from langchain_community.document_loaders import PyPDFLoader, UnstructuredExcelLoader
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 # from langchain.chains import ConversationalRetrievalChain # <-- TWEAK: No longer needed
-from langchain.prompts import ChatPromptTemplate, SystemMessagePromptTemplate, HumanMessagePromptTemplate, MessagesPlaceholder
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_community.chat_message_histories import ChatMessageHistory
-from langchain.schema import Document
+from langchain_core.documents import Document
 # from langchain.agents import Tool, AgentExecutor, create_openai_functions_agent # <-- TWEAK: Replaced with LCEL branch
 from langchain_tavily import TavilySearch
 from langchain_core.messages import HumanMessage, AIMessage, BaseMessage, SystemMessage
