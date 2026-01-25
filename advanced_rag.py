@@ -193,19 +193,28 @@ powerful_llm = ChatOpenAI(model="gpt-3.5-turbo", temperature=0) # Use 3.5-Turbo 
 router_prompt = ChatPromptTemplate.from_messages([
     ("system", """You are a routing assistant. Your job is to classify user queries into one of two categories:
 
-1. **InternalDocsQuery**: Use ONLY for questions about:
-   - Company health insurance policies, benefits, coverage details
-   - HR policies, employee benefits, company-specific information
-   - Provider lists, hospital networks, insurance plans
-   - Internal company knowledge or documents
+1. **InternalDocsQuery**: Use for questions about:
+   - Health insurance plans (Bronze, Silver, Gold, Platinum)
+   - Insurance benefits, coverage, limits, deductibles
+   - HMO plans, adding dependents, enrollment
+   - Physiotherapy, dental, optical, maternity benefits
+   - Provider networks, hospitals, clinics
+   - HR policies, employee benefits, company policies
+   - Company-specific information or internal documents
+   - Any question containing: "plan", "HMO", "insurance", "benefit", "coverage", "limit", "provider", "hospital", "clinic", "physiotherapy", "dental", "optical", "maternity", "dependent", "enrollment"
 
-2. **WebSearchQuery**: Use for EVERYTHING ELSE, including:
-   - Greetings (hello, hi, how are you)
-   - General questions or casual conversation
-   - Questions about external information, news, weather
-   - Any question that doesn't relate to internal company documents
+2. **WebSearchQuery**: Use ONLY for:
+   - Greetings (hello, hi, how are you) - simple greetings with no question
+   - General knowledge questions unrelated to company/insurance
+   - Current events, news, weather
+   - Questions about external companies or public information
+   - Casual conversation with no specific information request
 
-IMPORTANT: When in doubt, choose WebSearchQuery. Only use InternalDocsQuery for clear company/insurance/HR-related questions."""),
+CRITICAL RULES:
+- If the question mentions ANY insurance-related term (plan, HMO, benefit, coverage, limit, provider, etc.), ALWAYS choose InternalDocsQuery
+- If the question asks "how do I" or "what is" about company processes or benefits, choose InternalDocsQuery
+- Only choose WebSearchQuery for truly general questions with NO company/insurance context
+- When in doubt between the two, choose InternalDocsQuery (company questions are more important than general web search)"""),
     MessagesPlaceholder("chat_history"),
     ("human", "{input}")
 ])
@@ -222,20 +231,61 @@ fast_router_chain = (
 # This chain now correctly takes a dict {'input': ..., 'chat_history': ...}
 # and outputs a message with a tool call.
 def extract_tool_call(msg):
-    """Extract tool call and log the routing decision."""
+    """Extract tool call from router message."""
     if not msg.tool_calls or len(msg.tool_calls) == 0:
         print("⚠️  Router returned no tool calls, defaulting to WebSearchQuery")
-        # Return a default WebSearchQuery tool call
-        from langchain_core.messages import ToolMessage
         return {
             "name": "WebSearchQuery",
             "args": {"query": ""}
         }
     tool_call = msg.tool_calls[0]
-    print(f"🔀 Router selected: {tool_call.get('name', 'unknown')} with query: {tool_call.get('args', {}).get('query', 'N/A')[:50]}...")
+    tool_name = tool_call.get('name', 'unknown') if isinstance(tool_call, dict) else getattr(tool_call, 'name', 'unknown')
+    args = tool_call.get('args', {}) if isinstance(tool_call, dict) else getattr(tool_call, 'args', {})
+    print(f"🔀 Router selected: {tool_name} with query: {args.get('query', 'N/A')[:50] if isinstance(args, dict) else 'N/A'}...")
+    return {
+        "name": tool_name,
+        "args": args if isinstance(args, dict) else {}
+    }
+
+# Enhanced tool call chain with keyword-based override
+def get_tool_call_with_keyword_check(x):
+    """Get tool call from router, but override with keyword detection if needed."""
+    user_input = x.get('input', '')
+    
+    # Keyword-based detection: if message contains insurance/HR keywords, force RAG
+    insurance_keywords = [
+        'plan', 'hmo', 'insurance', 'benefit', 'coverage', 'limit', 'provider',
+        'hospital', 'clinic', 'physiotherapy', 'dental', 'optical', 'maternity',
+        'dependent', 'enrollment', 'bronze', 'silver', 'gold', 'platinum',
+        'hr', 'policy', 'employee', 'add', 'wife', 'kids', 'children', 'form'
+    ]
+    
+    user_input_lower = (user_input or "").lower()
+    has_insurance_keywords = any(keyword in user_input_lower for keyword in insurance_keywords)
+    
+    # Run router
+    router_msg = fast_router_chain.invoke(x)
+    tool_call = extract_tool_call(router_msg)
+    
+    # Override if insurance keywords detected but router chose web search
+    if has_insurance_keywords and tool_call.get('name') == 'WebSearchQuery':
+        print(f"🔀 Router selected WebSearchQuery, but insurance keywords detected - overriding to InternalDocsQuery")
+        return {
+            "name": "InternalDocsQuery",
+            "args": {"query": user_input}
+        }
+    
+    # Also override if no tool calls but has keywords
+    if not router_msg.tool_calls and has_insurance_keywords:
+        print("⚠️  Router returned no tool calls, but detected insurance keywords - defaulting to InternalDocsQuery")
+        return {
+            "name": "InternalDocsQuery",
+            "args": {"query": user_input}
+        }
+    
     return tool_call
 
-get_tool_call_chain = (fast_router_chain | extract_tool_call)
+get_tool_call_chain = RunnableLambda(get_tool_call_with_keyword_check)
 
 
 # 4. Define the FINAL Answer Chains (RAG and Web Search)
@@ -491,6 +541,7 @@ class ChatRequest(BaseModel):
     session_id: str
     message: str
     user_id: str = None  # Optional, for future use
+    route: str = None  # Optional: 'rag' = force RAG, 'web' = force web search, None = use intelligent router
 
 @app.post("/chat")
 def chat_endpoint(req: ChatRequest):
@@ -504,13 +555,41 @@ def chat_endpoint(req: ChatRequest):
     prune_chat_history_in_place(history)
 
     try:
-        # TWEAK: The input to our new chain is a simple dictionary
-        result = agent_executor.invoke({
-            "input": req.message,
-            "chat_history": getattr(history, "_pruned_messages", history.messages)
-        })
-        # The result is now just the final string, not a dict
-        answer = result
+        # Check for explicit routing from frontend (user's dropdown selection)
+        explicit_route = req.route
+        if explicit_route == 'rag':
+            # User selected "People & Culture" → force RAG (bypass router)
+            print("🎯 Explicit route: RAG (People & Culture selected)")
+            result = rag_chain.invoke({
+                "tool_call": {
+                    "name": "InternalDocsQuery",
+                    "args": {"query": req.message}
+                },
+                "input": req.message,
+                "chat_history": getattr(history, "_pruned_messages", history.messages)
+            })
+            answer = result
+        elif explicit_route == 'web':
+            # User selected "General Advisor" → force web search (bypass router)
+            print("🎯 Explicit route: Web Search (General Advisor selected)")
+            result = web_search_chain.invoke({
+                "tool_call": {
+                    "name": "WebSearchQuery",
+                    "args": {"query": req.message}
+                },
+                "input": req.message,
+                "chat_history": getattr(history, "_pruned_messages", history.messages)
+            })
+            answer = result
+        else:
+            # No explicit route → use intelligent router
+            print("🤖 Using intelligent router (no explicit route)")
+            result = agent_executor.invoke({
+                "input": req.message,
+                "chat_history": getattr(history, "_pruned_messages", history.messages)
+            })
+            # The result is now just the final string, not a dict
+            answer = result
     except Exception as e:
         import traceback
         error_details = traceback.format_exc()
