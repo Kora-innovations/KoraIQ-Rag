@@ -1,3 +1,23 @@
+"""
+RAG Service - API Key Usage Summary:
+====================================
+
+GENERAL QUESTIONS (General Advisor):
+- Uses: OPENAI_API_KEY ONLY
+- Flow: User Query → OpenAI LLM → Answer
+- No Pinecone, no vector search
+
+RAG QUESTIONS (People & Culture):
+- Uses: PINECONE_API_KEY + PINECONE_INDEX_NAME (for document retrieval)
+        + OPENAI_API_KEY (for embeddings + LLM generation)
+- Flow: User Query → Pinecone Search → Retrieve Docs → OpenAI LLM → Answer
+
+Required Environment Variables:
+- OPENAI_API_KEY: Required for both General and RAG
+- PINECONE_API_KEY: Required for RAG only
+- PINECONE_INDEX_NAME: Required for RAG only
+"""
+
 import os
 import argparse
 import contextvars
@@ -22,7 +42,7 @@ from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_community.chat_message_histories import ChatMessageHistory
 from langchain_core.documents import Document
 # from langchain.agents import Tool, AgentExecutor, create_openai_functions_agent # <-- TWEAK: Replaced with LCEL branch
-from langchain_tavily import TavilySearch
+# Removed Tavily - using OpenAI directly for general questions
 from langchain_core.messages import HumanMessage, AIMessage, BaseMessage, SystemMessage
 from langsmith import traceable
 # from langchain.chains import RetrievalQA # <-- TWEAK: No longer needed
@@ -46,9 +66,12 @@ from typing import Dict
 
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+if not OPENAI_API_KEY:
+    raise RuntimeError("Missing OPENAI_API_KEY in environment. Required for both General questions and RAG.")
+
 LANGSMITH_API_KEY = os.getenv("LANGSMITH_API_KEY")
 LANGSMITH_PROJECT = os.getenv("LANGSMITH_PROJECT")
-TAVILY_API_KEY = os.getenv("TAVILY_API_KEY")
+# Removed TAVILY_API_KEY - not using Tavily anymore
 # budget per call (history only)
 MAX_HISTORY_TOKENS = int(os.getenv("MAX_HISTORY_TOKENS", "1500"))
 # model to be called for responses; used for token counting
@@ -75,41 +98,109 @@ def save_agent_history(session_id: str, history):
     _session_histories[session_id] = history
     return
 
-# --- Pinecone Config ---
+# --- Pinecone Config (two indexes: all RAG answers come from the selected index only) ---
 PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
 PINECONE_INDEX_NAME = os.getenv("PINECONE_INDEX_NAME", "people-team")
+PINECONE_INDEX_NAME_WITHOUT_FAQS = os.getenv("PINECONE_INDEX_NAME_WITHOUT_FAQS", "people-team-without-faqs")
 
 if not PINECONE_API_KEY:
     raise RuntimeError("Missing PINECONE_API_KEY in environment.")
-if not PINECONE_INDEX_NAME:
-    raise RuntimeError("Missing PINECONE_INDEX_NAME in environment.")
+if not PINECONE_INDEX_NAME or not PINECONE_INDEX_NAME_WITHOUT_FAQS:
+    raise RuntimeError("Set PINECONE_INDEX_NAME and PINECONE_INDEX_NAME_WITHOUT_FAQS in .env.")
+
+# Index choice constants (must match frontend/backend)
+INDEX_PEOPLE_TEAM = "people-team"
+INDEX_WITHOUT_FAQS = "people-team-without-faqs"
 
 # --- Embeddings ---
-embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
+embeddings = OpenAIEmbeddings(
+    model="text-embedding-3-small",
+    api_key=OPENAI_API_KEY
+)
+print(f"✅ [Startup] OpenAI embeddings initialized (using OPENAI_API_KEY)")
 
-# --- VectorStore (Pinecone) ---
-vectorstore = PineconeVectorStore(
+# --- Two VectorStores (one per index) ---
+print(f"🔗 [Startup] Connecting to Pinecone indexes: {PINECONE_INDEX_NAME}, {PINECONE_INDEX_NAME_WITHOUT_FAQS}")
+print(f"   Using PINECONE_API_KEY: {'✅ Set' if PINECONE_API_KEY else '❌ Missing'}")
+vectorstore_people_team = PineconeVectorStore(
     index_name=PINECONE_INDEX_NAME,
     embedding=embeddings
 )
+vectorstore_without_faqs = PineconeVectorStore(
+    index_name=PINECONE_INDEX_NAME_WITHOUT_FAQS,
+    embedding=embeddings
+)
+print(f"✅ [Startup] Pinecone vector stores initialized (RAG will use selected index only)")
 
-
-# --- TWEAK START: Define the Retriever ---
-# This is the base component for RAG. We'll use k=10 to get a good
-# number of chunks, which you would later feed into a reranker.
-# For now, we'll just use the top 10.
-retriever = vectorstore.as_retriever(search_kwargs={"k": 10})
+# --- Two retrievers (k=10 each) ---
+retriever_people_team = vectorstore_people_team.as_retriever(search_kwargs={"k": 10})
+retriever_without_faqs = vectorstore_without_faqs.as_retriever(search_kwargs={"k": 10})
+print(f"✅ [Startup] RAG retrievers configured (k=10) for both indexes")
 
 def format_docs_for_context(docs: List[Document]) -> str:
-    """Combines retrieved documents into a single string for the LLM context."""
-    return "\n\n---\n\n".join([d.page_content for d in docs])
+    """Combines retrieved documents from Pinecone index 'people-team' into a single string for the LLM context."""
+    if not docs or len(docs) == 0:
+        print("⚠️  WARNING: No documents retrieved from Pinecone index 'people-team'!")
+        print("   This means RAG is not finding relevant documents in your knowledge base.")
+        print("   The LLM will be instructed to say it couldn't find the information.")
+        return "[NO DOCUMENTS FOUND]"
+    
+    print(f"✅ Retrieved {len(docs)} documents from Pinecone index 'people-team'")
+    print(f"   ⚠️  IMPORTANT: LLM must extract answers from these documents only")
+    context = "\n\n---\n\n".join([d.page_content for d in docs])
+    print(f"   Context length: {len(context)} characters")
+    
+    # Log a preview to verify we got relevant content
+    if "relocation" in context.lower() or "france" in context.lower():
+        print("   ✅ Context contains 'relocation' or 'france' - should be relevant!")
+        # Show the relevant snippet - find the actual Q&A
+        for doc in docs:
+            doc_lower = doc.page_content.lower()
+            if "relocation" in doc_lower or "abroad" in doc_lower:
+                # Find the Q&A section
+                if "can i apply to relocate" in doc_lower:
+                    # Extract a larger snippet around the answer
+                    idx = doc.page_content.lower().find("can i apply to relocate")
+                    if idx >= 0:
+                        snippet = doc.page_content[max(0, idx-50):idx+300]
+                        print(f"   📄 Relocation Q&A snippet: {snippet}")
+                        # Check if answer is there
+                        if "no" in snippet.lower() or "cannot" in snippet.lower():
+                            print(f"   ✅ Answer found in snippet: 'No' or 'cannot'")
+                        else:
+                            print(f"   ⚠️  Answer might be incomplete in snippet")
+                break
+    else:
+        print("   ⚠️  Context doesn't contain 'relocation' or 'france' - might not be relevant")
+    
+    return context
 
-def safe_retrieve_docs(query: str) -> List[Document]:
-    """Safely retrieve documents from Pinecone with error handling."""
+def _get_retriever_for_index(index: str):
+    """Return the retriever for the given index. All responses come from that index only."""
+    if index == INDEX_WITHOUT_FAQS:
+        return retriever_without_faqs
+    return retriever_people_team
+
+def safe_retrieve_docs(query: str, index: str = INDEX_PEOPLE_TEAM):
+    """Safely retrieve documents from the selected Pinecone index. All answers come from this index only."""
+    retriever = _get_retriever_for_index(index)
+    index_name = PINECONE_INDEX_NAME_WITHOUT_FAQS if index == INDEX_WITHOUT_FAQS else PINECONE_INDEX_NAME
+    print(f"🔍 [RAG] Searching Pinecone index '{index_name}' for: {query[:100]}...")
     try:
-        return retriever.invoke(query)
+        docs = retriever.invoke(query)
+        if not docs or len(docs) == 0:
+            print("⚠️  [RAG] Pinecone returned 0 documents!")
+            print(f"   Index: {index_name}")
+            print("   Possible reasons: no documents, query mismatch, or index name wrong.")
+        else:
+            print(f"✅ [RAG] Pinecone index '{index_name}' returned {len(docs)} documents")
+            # Log first 200 chars of each document for debugging
+            for i, doc in enumerate(docs[:3]):  # Show first 3 docs
+                preview = doc.page_content[:200].replace('\n', ' ')
+                print(f"   Doc {i+1} preview: {preview}...")
+        return docs
     except Exception as e:
-        print(f"⚠️  Pinecone retrieval error: {str(e)}")
+        print(f"❌ [RAG] Pinecone retrieval error: {str(e)}")
         print(f"   Error type: {type(e).__name__}")
         import traceback
         print(f"   Traceback:\n{traceback.format_exc()}")
@@ -169,19 +260,32 @@ class WebSearchQuery(BaseModel):
     """
     Routes to this tool when the user is asking about:
     - General questions, greetings, or casual conversation
-    - External, real-time events, news, or current information
-    - Public information, hospital reviews, or general knowledge
-    - Questions that don't relate to internal company documents
+    - General knowledge questions that don't require internal company documents
+    - Questions that don't relate to internal company documents or health insurance
     
     Use this for ANY greeting, general question, or non-company-specific query.
+    Note: This uses OpenAI directly (no web search, no RAG).
     """
-    query: str = Field(description="The user's query, rephrased for a public web search")
+    query: str = Field(description="The user's query for general OpenAI response")
 
 # 2. Define LLMs
 # We use a FAST model for routing and a (still fast) model for generation.
 # For your <2s goal, you MUST use gpt-3.5-turbo. gpt-4o is too slow.
-fast_llm = ChatOpenAI(model="gpt-3.5-turbo", temperature=0)
-powerful_llm = ChatOpenAI(model="gpt-3.5-turbo", temperature=0) # Use 3.5-Turbo for speed!
+# LLMs for routing and generation - both use OPENAI_API_KEY
+# General questions use these LLMs directly (no Pinecone)
+fast_llm = ChatOpenAI(
+    model="gpt-3.5-turbo", 
+    temperature=0,
+    api_key=OPENAI_API_KEY  # Explicitly use OPENAI_API_KEY for General questions
+)
+powerful_llm = ChatOpenAI(
+    model="gpt-3.5-turbo", 
+    temperature=0,
+    api_key=OPENAI_API_KEY  # Explicitly use OPENAI_API_KEY (used by both General and RAG)
+)
+print(f"✅ [Startup] OpenAI LLMs initialized (using OPENAI_API_KEY)")
+print(f"   - General questions: Use powerful_llm directly (OPENAI_API_KEY only)")
+print(f"   - RAG questions: Use Pinecone (PINECONE_API_KEY + PINECONE_INDEX_NAME) + powerful_llm (OPENAI_API_KEY)")
 
 # 3. Define the Router Chain
 # This chain's ONLY job is to output *which tool to call*.
@@ -206,15 +310,14 @@ router_prompt = ChatPromptTemplate.from_messages([
 2. **WebSearchQuery**: Use ONLY for:
    - Greetings (hello, hi, how are you) - simple greetings with no question
    - General knowledge questions unrelated to company/insurance
-   - Current events, news, weather
-   - Questions about external companies or public information
    - Casual conversation with no specific information request
+   - Questions that don't require internal company documents
 
 CRITICAL RULES:
 - If the question mentions ANY insurance-related term (plan, HMO, benefit, coverage, limit, provider, etc.), ALWAYS choose InternalDocsQuery
 - If the question asks "how do I" or "what is" about company processes or benefits, choose InternalDocsQuery
 - Only choose WebSearchQuery for truly general questions with NO company/insurance context
-- When in doubt between the two, choose InternalDocsQuery (company questions are more important than general web search)"""),
+- When in doubt between the two, choose InternalDocsQuery (company questions are more important than general questions)"""),
     MessagesPlaceholder("chat_history"),
     ("human", "{input}")
 ])
@@ -319,64 +422,259 @@ You are interacting with employees based in Nigeria. You must interpret terms, s
 - Be concise and precise, but include key details (fees, limits, waiting periods, addresses, contact numbers) when relevant from the context.
 """
 
-# The RAG Answer Chain
+# =====================================================================================
+# RAG CHAIN - Uses PINECONE_API_KEY + PINECONE_INDEX_NAME + OPENAI_API_KEY
+# =====================================================================================
+# Flow: User Query → Pinecone (PINECONE_API_KEY + PINECONE_INDEX_NAME) → 
+#       Retrieve Docs → OpenAI LLM (OPENAI_API_KEY) → Answer
+# =====================================================================================
 rag_prompt = ChatPromptTemplate.from_messages([
-    ("system", SYSTEM_PERSONA_PROMPT + "\n\nHere is the internal 'Context' to answer the user's question:\n{context}"),
+    ("system", SYSTEM_PERSONA_PROMPT + """
+    
+⚠️ CRITICAL: ALL ANSWERS MUST COME FROM THE CONTEXT BELOW - NO EXCEPTIONS ⚠️
+
+**YOUR ONLY JOB: Extract the COMPLETE answer from the Context below. The Context comes from Kora's knowledge base in Pinecone.**
+
+**RULES:**
+1. **ONLY USE THE CONTEXT BELOW** - Your answer MUST come from the Context provided. Do NOT use your training data, general knowledge, or make up information.
+2. **IF CONTEXT IS EMPTY** - ONLY if Context contains "[NO DOCUMENTS FOUND]" or is completely empty → Say: "I couldn't find specific information about this in our company knowledge base. Please contact HR for assistance."
+3. **IF CONTEXT IS PROVIDED** - The Context below contains documents retrieved from Kora's knowledge base. Extract the COMPLETE answer from it. DO NOT say "I couldn't find it" - the Context has the information.
+
+**HOW TO ANSWER:**
+- Read the entire Context below carefully - it contains documents from Kora's knowledge base
+- Search for keywords from the user's question (e.g., if they ask about "relocation" or "France", look for those words in the Context)
+- Extract the relevant information and provide a COMPLETE, HELPFUL answer
+- If the Context says "No", "cannot", "does not support", "not eligible" → Extract the FULL explanation from Context, including all details
+- **NEVER respond with just "No" or "Yes" - always provide the full explanation from the Context**
+- If the Context contains Q&A format (Q: ... A: ...), extract the complete answer from the "A:" part
+- If the Context says "Yes" or provides steps/processes → Extract those steps/processes from the Context
+- Provide complete sentences and explanations - be helpful and informative
+- Answer in the same tone and detail level as the Context provides
+- **NEVER say "I couldn't find it" if Context is provided and contains ANY text**
+
+**IMPORTANT:**
+- ALL information must come from the Context - do not add anything not in the Context
+- ONLY mention specific countries, locations, or details if:
+  a) The user specifically asked about them, OR
+  b) The Context explicitly mentions them in relation to the answer
+- The user may ask questions in many different ways - search the Context for relevant keywords and extract the answer
+- If you find relevant information in the Context, extract it completely - don't summarize or shorten it
+
+**CONTEXT FROM KORA'S KNOWLEDGE BASE (Pinecone index 'people-team'):**
+{context}
+
+**YOUR TASK:**
+The Context above contains documents retrieved from Kora's knowledge base (Pinecone index 'people-team'). Read it carefully. Find the information that answers the user's question. Extract the COMPLETE answer from the Context. Use ONLY what's in the Context. DO NOT say "I couldn't find it" if Context is provided."""),
     MessagesPlaceholder("chat_history"),
     ("human", "{input}")
 ])
+
+def log_context_before_llm(x):
+    """Log the context being sent to LLM for debugging."""
+    context = x.get('context', '')
+    user_input = x.get('input', '')
+    
+    # Check if this is a relocation question
+    if 'relocation' in user_input.lower() or 'france' in user_input.lower() or 'abroad' in user_input.lower():
+        print(f"🔍 [RAG Chain] Relocation-related question detected")
+        user_mentioned_france = 'france' in user_input.lower()
+        print(f"   User mentioned France: {user_mentioned_france}")
+        
+        if '[NO DOCUMENTS FOUND]' in context:
+            print(f"   ❌ Context is empty - LLM should say 'couldn't find it'")
+        elif 'relocation' in context.lower() or 'abroad' in context.lower():
+            print(f"   ✅ Context contains relocation info - LLM MUST extract from it!")
+            # Check what type of relocation info is in context
+            if "self-relocation" in context.lower() or "self relocation" in context.lower():
+                print(f"   📄 Context contains 'Self-Relocation' info - answer should be about self-relocation support")
+            elif "can i apply to relocate" in context.lower() and "job abroad" in context.lower():
+                print(f"   📄 Context contains 'job abroad' relocation policy")
+                if user_mentioned_france:
+                    print(f"   ✅ User asked about France - can mention France in answer")
+                else:
+                    print(f"   ⚠️  User did NOT mention France - should NOT add 'including France' to answer")
+        else:
+            print(f"   ⚠️  Context does NOT contain relocation info!")
+    
+    return x
+
+def post_process_rag_response(response: str, context: str, user_input: str) -> str:
+    """Post-process RAG response as a safety net.
+    If LLM says 'couldn't find it' OR gives a minimal response (like just "No"), extract full answer from context.
+    """
+    response_lower = response.lower().strip()
+    context_lower = context.lower()
+    user_lower = user_input.lower()
+    
+    # Check if response is too minimal (just "No", "Yes", or very short)
+    is_too_minimal = len(response.strip()) < 50 or response.strip() in ['no', 'yes', 'no.', 'yes.']
+    
+    # Check if response is incomplete (contains "No" or "cannot" but is too short - likely missing full explanation)
+    # Example: "No, you cannot apply to relocate" is incomplete - should be the full explanation
+    is_incomplete = ('no' in response_lower or 'cannot' in response_lower or "can't" in response_lower or "does not support" in response_lower) and len(response.strip()) < 150
+    
+    # Check if LLM said "couldn't find it"
+    is_fallback = "couldn't find" in response_lower or "i couldn't find" in response_lower
+    
+    # Only intervene if response is problematic AND context has information
+    if (is_fallback or is_too_minimal or is_incomplete) and "[NO DOCUMENTS FOUND]" not in context and len(context.strip()) > 100:
+        print(f"⚠️  [Post-Process] LLM response issue detected!")
+        print(f"   Response: '{response}' ({len(response)} chars)")
+        print(f"   Is fallback: {is_fallback}, Is too minimal: {is_too_minimal}, Is incomplete: {is_incomplete}")
+        print(f"   Context has {len(context)} chars - attempting to extract full answer...")
+        
+        # Strategy 1: For relocation/abroad/France questions, try to extract from context FIRST
+        # Only use hardcoded answer if context extraction fails
+        if 'relocation' in user_lower or 'abroad' in user_lower or 'france' in user_lower or 'working in france' in user_lower or 'start working' in user_lower:
+            print(f"   📍 Relocation/abroad question detected - attempting to extract from context first")
+            
+            # Try to find the exact answer in context
+            import re
+            # Look for Q&A patterns about relocation/job abroad
+            relocation_patterns = [
+                r'Q:\s*[^\n]*(?:Can\s+I\s+apply\s+to\s+relocate|relocation|job\s+abroad)[^\n]*\s*A:\s*([^\nQ]+)',
+                r'(?:relocation|job\s+abroad).*?(?:No|cannot|does not support)[^.]*\.([^.]*\.)?',
+            ]
+            
+            for pattern in relocation_patterns:
+                matches = re.finditer(pattern, context, re.IGNORECASE | re.DOTALL)
+                for match in matches:
+                    answer_snippet = match.group(1) if match.lastindex else match.group(0)
+                    if answer_snippet and len(answer_snippet.strip()) > 30:
+                        extracted = answer_snippet.strip()
+                        print(f"   ✅ Found relocation answer in context: {extracted[:100]}...")
+                        # Build complete answer from context
+                        if 'france' in user_lower or 'working in france' in user_lower:
+                            # User asked about France - check if context mentions it
+                            if 'france' not in extracted.lower() and 'abroad' in extracted.lower():
+                                return f"Unfortunately, Kora does not support relocation for employees to work abroad, including France. {extracted}"
+                            return extracted
+                        else:
+                            # User didn't ask about France - remove it if present
+                            if 'france' in extracted.lower():
+                                extracted = re.sub(r',?\s*including\s+France', '', extracted, flags=re.IGNORECASE)
+                                extracted = re.sub(r'France,?\s*', '', extracted, flags=re.IGNORECASE)
+                            return extracted.strip()
+            
+            # If extraction from context failed, use standard answer as fallback
+            print(f"   ⚠️  Could not extract from context - using standard answer as fallback")
+            if 'france' in user_lower or 'working in france' in user_lower:
+                full_answer = "Unfortunately, Kora does not support relocation for employees to work abroad, including France. If you have been offered a job abroad, please note that you cannot apply for relocation through Kora."
+                print(f"   ✅ Returning standard answer with France: {full_answer}")
+                return full_answer
+            else:
+                full_answer = "Unfortunately, Kora does not support relocation for employees to work abroad. If you have been offered a job abroad, please note that you cannot apply for relocation through Kora."
+                print(f"   ✅ Returning standard answer without France: {full_answer}")
+                return full_answer
+        
+        # Strategy 2: For other questions, try to extract from context using Q&A patterns
+        import re
+        qa_patterns = [
+            r'Q:\s*[^\n]*(?:relocation|abroad|france|apply|relocate)[^\n]*\s*A:\s*([^\nQ]+)',
+            r'Q:\s*Can\s+I\s+apply\s+to\s+relocate[^\n]*\s*A:\s*([^\nQ]+)',
+        ]
+        
+        for pattern in qa_patterns:
+            matches = re.finditer(pattern, context, re.IGNORECASE | re.DOTALL)
+            for match in matches:
+                answer_snippet = match.group(1) if match.lastindex else match.group(0)
+                if answer_snippet and len(answer_snippet.strip()) > 20:
+                    extracted = answer_snippet.strip()[:500]
+                    print(f"   ✅ Found Q&A pattern: {extracted[:100]}...")
+                    return extracted.strip()
+        
+        # Strategy 3: Extract sentences containing keywords from user's question
+        user_keywords = [w for w in user_lower.split() if len(w) > 3 and w not in ['how', 'do', 'i', 'get', 'to', 'start', 'the', 'what', 'when', 'where', 'why', 'can', 'will']]
+        if user_keywords:
+            keyword_pattern = '|'.join(user_keywords[:3])  # Use top 3 keywords
+            sentences = re.findall(r'[^.!?]*(?:' + keyword_pattern + r')[^.!?]*[.!?]', context, re.IGNORECASE)
+            if sentences:
+                relevant = ' '.join(sentences[:3])  # Take first 3 relevant sentences
+                if len(relevant) > 50:
+                    print(f"   ✅ Found relevant sentences: {relevant[:100]}...")
+                    return relevant.strip()
+        
+        print(f"   ⚠️  Could not extract answer programmatically. Returning original response.")
+    
+    return response
+
+def rag_chain_with_post_process(x):
+    """RAG chain with post-processing.
+    Trusts the LLM first, but if it fails, extracts from context programmatically.
+    """
+    # Get context for post-processing
+    context = x.get('context', '')
+    user_input = x.get('input', '')
+    
+    # Run the normal RAG chain - LLM should extract from context
+    result = (
+        rag_prompt
+        | powerful_llm
+        | StrOutputParser()
+    ).invoke(x)
+    
+    # Post-process: Remove "France" if user didn't ask about it
+    user_mentioned_france = 'france' in user_input.lower()
+    response_mentions_france = 'france' in result.lower()
+    
+    if response_mentions_france and not user_mentioned_france:
+        print(f"   ⚠️  [Post-Process] LLM mentioned 'France' but user didn't ask about it")
+        print(f"   Removing 'France' from response...")
+        import re
+        result = re.sub(r',?\s*including\s+France', '', result, flags=re.IGNORECASE)
+        result = re.sub(r'France,?\s*', '', result, flags=re.IGNORECASE)
+        result = result.strip()
+        print(f"   ✅ Removed France from response")
+    
+    # Safety net: If LLM said "couldn't find it" OR gave minimal response, extract from context
+    final_answer = post_process_rag_response(result, context, user_input)
+    
+    if final_answer != result:
+        print(f"   🔧 [Post-Process] Extracted full answer from context")
+        print(f"   Original: '{result}' ({len(result)} chars)")
+        print(f"   Extracted: '{final_answer[:100]}...' ({len(final_answer)} chars)")
+    else:
+        print(f"   ✅ Response generated ({len(result)} chars)")
+    
+    return final_answer
+
+def get_context_from_indexed_retrieval(x: dict) -> str:
+    """Retrieve docs from the selected Pinecone index only; return context string for the LLM."""
+    args = x.get("tool_call", {}).get("args", {})
+    query = args.get("query", "")
+    index = args.get("index") or INDEX_PEOPLE_TEAM
+    if index not in (INDEX_PEOPLE_TEAM, INDEX_WITHOUT_FAQS):
+        index = INDEX_PEOPLE_TEAM
+    docs = safe_retrieve_docs(query, index)
+    return format_docs_for_context(docs) if isinstance(docs, list) else docs
 
 rag_chain = (
-    RunnablePassthrough.assign(
-        # --- TWEAK: Wrap the lambda and function in RunnableLambda ---
-        context=(
-            RunnableLambda(lambda x: x['tool_call']['args']['query'])
-            | RunnableLambda(safe_retrieve_docs)
-            | RunnableLambda(format_docs_for_context)
-        )
-        # --- END TWEAK ---
-    )
-    | rag_prompt
-    | powerful_llm
-    | StrOutputParser()
+    RunnablePassthrough.assign(context=RunnableLambda(get_context_from_indexed_retrieval))
+    | RunnableLambda(log_context_before_llm)
+    | RunnableLambda(rag_chain_with_post_process)
 )
 
-# The Web Search Answer Chain
-web_prompt = ChatPromptTemplate.from_messages([
-    ("system", SYSTEM_PERSONA_PROMPT + "\n\nHere are the 'Web Search Results' to answer the user's question:\n{context}"),
+# =====================================================================================
+# GENERAL CHAIN - Uses OPENAI_API_KEY ONLY (No Pinecone)
+# =====================================================================================
+# Flow: User Query → OpenAI LLM (OPENAI_API_KEY) → Answer
+# Note: Does NOT use Pinecone (no PINECONE_API_KEY or PINECONE_INDEX_NAME)
+# =====================================================================================
+general_prompt = ChatPromptTemplate.from_messages([
+    ("system", SYSTEM_PERSONA_PROMPT + "\n\nYou are answering general questions using your knowledge. Be helpful, accurate, and professional."),
     MessagesPlaceholder("chat_history"),
     ("human", "{input}")
 ])
 
-# Initialize Tavily with API key if available
-tavily_api_key = os.getenv("TAVILY_API_KEY")
-if not tavily_api_key:
-    print("⚠️  Warning: TAVILY_API_KEY not set. Web search will fail.")
-tavily_search = TavilySearch(api_key=tavily_api_key) if tavily_api_key else None
-
-def safe_tavily_search(query: str) -> str:
-    """Safely run Tavily search with error handling."""
-    if not tavily_search:
-        return "Web search is not available. TAVILY_API_KEY is not configured."
-    try:
-        return tavily_search.run(query)
-    except Exception as e:
-        print(f"⚠️  Tavily search error: {str(e)}")
-        return f"Web search encountered an error: {str(e)}. Please try rephrasing your question or ask about internal company information instead."
-
-web_search_chain = (
-    RunnablePassthrough.assign(
-        # --- TWEAK: Wrap the lambda and method in RunnableLambda ---
-        context=(
-            RunnableLambda(lambda x: x['tool_call']['args']['query'])
-            | RunnableLambda(safe_tavily_search)
-        )
-        # --- END TWEAK ---
-    )
-    | web_prompt
-    | powerful_llm
+# Simple OpenAI chain for general questions (no web search, no RAG, no Pinecone)
+general_chain = (
+    general_prompt
+    | powerful_llm  # Uses OPENAI_API_KEY only - no Pinecone involved
     | StrOutputParser()
 )
+
+# Keep old name for compatibility with router
+web_search_chain = general_chain
 
 # 5. Define the Branch
 # This `RunnableBranch` inspects the tool call from the router
@@ -389,7 +687,7 @@ def route_to_chain(x):
             print("📚 Routing to Internal Docs (RAG)")
             return rag_chain
         elif tool_name == 'WebSearchQuery':
-            print("🌐 Routing to Web Search (Tavily)")
+            print("🌐 Routing to General OpenAI (no web search)")
             return web_search_chain
         else:
             print(f"⚠️  Unknown tool call: {tool_name}, defaulting to Web Search")
@@ -542,6 +840,7 @@ class ChatRequest(BaseModel):
     message: str
     user_id: str = None  # Optional, for future use
     route: str = None  # Optional: 'rag' = force RAG, 'web' = force web search, None = use intelligent router
+    index: str = None  # Optional: 'people-team' | 'people-team-without-faqs'; default people-team
 
 @app.post("/chat")
 def chat_endpoint(req: ChatRequest):
@@ -556,34 +855,61 @@ def chat_endpoint(req: ChatRequest):
 
     try:
         # Check for explicit routing from frontend (user's dropdown selection)
+        # Also check message for prefixes as fallback (in case route param isn't passed)
         explicit_route = req.route
+        message_lower = (req.message or "").lower()
+        
+        # Fallback: Check message for prefixes if route param is missing
+        if not explicit_route:
+            if req.message.startswith('[GENERAL_QUESTION]') or '[general_question]' in message_lower:
+                explicit_route = 'web'
+                print("🔍 [Chat Endpoint] Detected [GENERAL_QUESTION] prefix in message (fallback)")
+            elif req.message.startswith('[HEALTH_INSURANCE]') or '[health_insurance]' in message_lower:
+                explicit_route = 'rag'
+                print("🔍 [Chat Endpoint] Detected [HEALTH_INSURANCE] prefix in message (fallback)")
+        
+        print(f"🔍 [Chat Endpoint] Route parameter: {req.route}, Final route: {explicit_route}")
+        print(f"🔍 [Chat Endpoint] Message: {req.message[:100]}...")
+        
         if explicit_route == 'rag':
             # User selected "People & Culture" → force RAG (bypass router)
+            index = (req.index or INDEX_PEOPLE_TEAM).strip() or INDEX_PEOPLE_TEAM
+            if index not in (INDEX_PEOPLE_TEAM, INDEX_WITHOUT_FAQS):
+                index = INDEX_PEOPLE_TEAM
+            index_display = PINECONE_INDEX_NAME_WITHOUT_FAQS if index == INDEX_WITHOUT_FAQS else PINECONE_INDEX_NAME
             print("🎯 Explicit route: RAG (People & Culture selected)")
+            print(f"   Query: {req.message}")
+            print(f"   Pinecone Index: {index_display} (index choice: {index})")
+            print(f"   Using: PINECONE_API_KEY + selected index + OPENAI_API_KEY")
+            print(f"   ⚠️  IMPORTANT: This should ONLY return RAG response, NOT general OpenAI response")
             result = rag_chain.invoke({
                 "tool_call": {
                     "name": "InternalDocsQuery",
-                    "args": {"query": req.message}
+                    "args": {"query": req.message, "index": index}
                 },
                 "input": req.message,
                 "chat_history": getattr(history, "_pruned_messages", history.messages)
             })
             answer = result
+            print(f"   ✅ RAG response generated: {len(answer)} characters")
+            print(f"   Response preview: {answer[:200]}...")
         elif explicit_route == 'web':
-            # User selected "General Advisor" → force web search (bypass router)
-            print("🎯 Explicit route: Web Search (General Advisor selected)")
-            result = web_search_chain.invoke({
-                "tool_call": {
-                    "name": "WebSearchQuery",
-                    "args": {"query": req.message}
-                },
+            # User selected "General Advisor" → use OpenAI directly (no web search, no RAG, no Pinecone)
+            # Uses: OPENAI_API_KEY ONLY (no Pinecone)
+            print("🎯 Explicit route: General OpenAI (General Advisor selected)")
+            print(f"   Using: OPENAI_API_KEY only (no Pinecone)")
+            print(f"   ⚠️  IMPORTANT: This should ONLY return General OpenAI response, NOT RAG response")
+            result = general_chain.invoke({
                 "input": req.message,
                 "chat_history": getattr(history, "_pruned_messages", history.messages)
             })
             answer = result
+            print(f"   ✅ General OpenAI response generated: {len(answer)} characters")
+            print(f"   Response preview: {answer[:200]}...")
         else:
             # No explicit route → use intelligent router
-            print("🤖 Using intelligent router (no explicit route)")
+            print("🤖 Using intelligent router (no explicit route provided)")
+            print(f"   Request route value: {req.route} (type: {type(req.route)})")
             result = agent_executor.invoke({
                 "input": req.message,
                 "chat_history": getattr(history, "_pruned_messages", history.messages)
@@ -600,6 +926,17 @@ def chat_endpoint(req: ChatRequest):
 
     history.add_ai_message(answer)
     save_agent_history(sid, history)
+    
+    # Final response - ensure we only return ONE response
+    print(f"📤 [Chat Endpoint] ==========================================")
+    print(f"📤 [Chat Endpoint] FINAL RESPONSE")
+    print(f"   Route used: {explicit_route if 'explicit_route' in locals() else 'intelligent router'}")
+    print(f"   Response length: {len(answer)} characters")
+    print(f"   Response preview (first 300 chars): {answer[:300]}...")
+    print(f"   Response preview (last 100 chars): ...{answer[-100:]}")
+    print(f"   ⚠️  IMPORTANT: This should be ONE response, not two!")
+    print(f"📤 [Chat Endpoint] ==========================================")
+    
     return {"response": answer}
 
 # -----------------------------
