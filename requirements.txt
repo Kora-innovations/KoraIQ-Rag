@@ -1,0 +1,23 @@
+# RAG service - for Render and local pip install
+fastapi>=0.109.0
+uvicorn[standard]>=0.27.0
+pydantic>=2.0.0
+python-dotenv>=1.0.0
+regex>=2023.0.0
+
+# LangChain
+langchain-openai>=0.0.5
+langchain-pinecone>=0.0.4
+langchain-community>=0.0.20
+langchain-text-splitters>=0.0.1
+langchain-core>=0.1.0
+
+# Observability (optional but imported)
+langsmith>=0.1.0
+
+# OpenAI / embeddings
+openai>=1.0.0
+tiktoken>=0.5.0
+
+# Pinecone
+pinecone-client>=3.0.0
