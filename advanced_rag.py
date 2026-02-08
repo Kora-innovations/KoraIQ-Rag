@@ -65,7 +65,8 @@ from typing import Dict
 # =====================================================================================
 
 
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+# Strip whitespace/newlines - trailing newline in env (e.g. Render) causes "Illegal header value"
+OPENAI_API_KEY = (os.getenv("OPENAI_API_KEY") or "").strip()
 if not OPENAI_API_KEY:
     raise RuntimeError("Missing OPENAI_API_KEY in environment. Required for both General questions and RAG.")
 
@@ -99,9 +100,9 @@ def save_agent_history(session_id: str, history):
     return
 
 # --- Pinecone Config (two indexes: all RAG answers come from the selected index only) ---
-PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
-PINECONE_INDEX_NAME = os.getenv("PINECONE_INDEX_NAME", "people-team")
-PINECONE_INDEX_NAME_WITHOUT_FAQS = os.getenv("PINECONE_INDEX_NAME_WITHOUT_FAQS", "people-team-without-faqs")
+PINECONE_API_KEY = (os.getenv("PINECONE_API_KEY") or "").strip()
+PINECONE_INDEX_NAME = (os.getenv("PINECONE_INDEX_NAME") or "people-team").strip()
+PINECONE_INDEX_NAME_WITHOUT_FAQS = (os.getenv("PINECONE_INDEX_NAME_WITHOUT_FAQS") or "people-team-without-faqs").strip()
 
 if not PINECONE_API_KEY:
     raise RuntimeError("Missing PINECONE_API_KEY in environment.")
